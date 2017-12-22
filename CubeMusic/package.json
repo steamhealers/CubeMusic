@@ -5,19 +5,23 @@
   "author": "steamhealer",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
-    "start": "npm run dev",
-    "lint": "eslint --ext .js,.vue src",
-    "build": "node build/build.js"
+    "dev": "node build/dev-server.js",
+    "start": "node build/dev-server.js",
+    "build": "node build/build.js",
+    "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "axios": "^0.17.1",
     "babel-polyfill": "^6.26.0",
     "babel-runtime": "^6.26.0",
     "better-scroll": "^1.6.2",
+    "eventsource-polyfill": "^0.9.6",
     "fastclick": "^1.0.6",
     "jsonp": "^0.2.1",
     "vue": "^2.5.2",
-    "vue-router": "^3.0.1"
+    "vue-lazyload": "^1.1.4",
+    "vue-router": "^3.0.1",
+    "webpack-hot-middleware": "^2.21.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

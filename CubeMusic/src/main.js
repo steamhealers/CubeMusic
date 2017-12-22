@@ -4,6 +4,11 @@ import App from './App'
 import fastclick from 'fastclick'
 import 'common/stylus/index.styl'
 import router from './router'
+import lazyload from 'vue-lazyload'
+
+Vue.use(lazyload, {
+  loading: require('common/image/default.png')
+})
 fastclick.attach(document.body)
 
 // import vConsole from 'vconsole'
