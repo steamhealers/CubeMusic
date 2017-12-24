@@ -13,38 +13,38 @@
             </ul>
             <div class="list-shortcut" @touchstart.prevent.stop="onShotcutTouchStart" @touchmove.prevent.stop="onShotcutTouchMove">
                 <ul>
-                    <li v-for="(item , index) in shotcutList" class="item" :data-index="index" :class="{current: currentIndex === index}">
-                        {{item}}
-                    </li>
+                    <li class="item" v-for="(item,index) in shotcutlist" :data-index="index" :class="{current:currentIndex === index}">{{item}}</li>
                 </ul>
             </div>
-            <div class="list-fixed" v-show="fixedTitle" ref="listFixed">
-                <h1 class="fixed-title">{{fixedTitle}}</h1>
+            <div class="list-fixed" v-show="fixedTitle" ref="fixedTitle">
+                <h2 class="fixed-title">{{fixedTitle}}</h2>
             </div>
             <div  class="loading-container" v-show="!data.length">
                 <loading></loading>
             </div>
-    </scroll>    
+    </scroll>
 </template>
 
 <script>
+import scroll from 'base/scroll/scroll'
+import loading from 'base/loading/loading'
+import { getSingerList } from 'api/singer'
+import { getData } from 'common/js/dom'
+
 const ANCHOR_HEIGHT = 18
 const FIXED_HEIGHT = 30
-import scroll from 'base/scroll/scroll'
-import { getData } from 'common/js/dom'
-import loading from 'base/loading/loading'
 export default {
     created() {
         this.touch = {}
         this.listenScroll = true
-        this.listHeight = []
         this.probeType = 3
+        this.listHeight = []
     },
     data() {
         return {
             scrollY: -1,
             currentIndex: 0,
-            diff: 0
+            diff: -1
         }
     },
     props: {
@@ -53,6 +53,10 @@ export default {
             default: []
         }
     },
+    components: {
+        scroll,
+        loading
+    },
     methods: {
         // 点击
         onShotcutTouchStart(e) {
@@ -60,6 +64,7 @@ export default {
             this.touch.first = e.touches[0].pageY
             this.touch.anchorIndex = anchorIndex
             this._scrollTo(anchorIndex)
+            console.log(this.currentIndex);
         },
         // 拖动
         onShotcutTouchMove(e) {
@@ -75,17 +80,14 @@ export default {
             }
             if (index < 0) {
                 index = 0
-            } else if (index > this.listHeight - 2) {
-                index > this.listHeight - 2
+            } else if (index > this.listHeight.length - 2) {
+                index = this.listHeight.length - 2
             }
             this.scrollY = -this.listHeight[index]
             this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 200)
-
         },
         _onScroll(pos) {
             this.scrollY = pos.y
-            // let height1 = 
-
         },
         _calculateHeight() {
             this.listHeight = []
@@ -98,18 +100,16 @@ export default {
             }
         }
     },
-    components: {
-        scroll,
-        loading
-    },
     computed: {
-        shotcutList() {
-            return this.data.map(group => {
+        shotcutlist() {
+            return this.data.map((group) => {
                 return group.title.substring(0, 1)
             })
         },
         fixedTitle() {
-            if (this.scrollY > 0) return ''
+            if (this.scrollY > 0) {
+                return ''
+            }
             return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
         }
     },
@@ -121,32 +121,24 @@ export default {
         },
         scrollY(newY) {
             const listHeight = this.listHeight
-            // 顶部
             if (newY > 0) {
                 this.currentIndex = 0
                 return
             }
-            // 中间部分
             for (let i = 0; i < listHeight.length - 1; i++) {
-                let height1 = listHeight[i]
-                let height2 = listHeight[i + 1]
-                if (-newY >= height1 && -newY < height2) {
+                let h1 = listHeight[i]
+                let h2 = listHeight[i + 1]
+                if (-newY >= h1 && -newY < h2) {
                     this.currentIndex = i
-                    this.diff = height2 + newY
+                    this.diff = h2 + newY
                     return
                 }
             }
-            // 底部
-            this.currentIndex = listHeight.length - 2
+            this.currentIndex = listHeight - 2
         },
         diff(newVal) {
             let fixedTop = (newVal > 0 && newVal < FIXED_HEIGHT) ? newVal - FIXED_HEIGHT : 0
-            if (this.fixedTop === fixedTop) {
-                return
-            }
-            this.fixedTop = fixedTop
-            this.$refs.listFixed.style.transform = `translate3d(0,${fixedTop}px,0)`
-
+            this.$refs.fixedTitle.style.transform = `translate3d(0,${fixedTop}px,0)`
         }
     }
 }   
