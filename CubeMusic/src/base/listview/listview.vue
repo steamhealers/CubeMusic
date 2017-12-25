@@ -4,7 +4,7 @@
                 <li class="list-group" v-for="group in data" ref="listGroup">
                     <h2 class="list-group-title">{{group.title}}</h2>
                     <ul>
-                        <li class="list-group-item" v-for="item in group.item">
+                        <li  @click="selectItem(item)" class="list-group-item" v-for="item in group.item">
                             <img v-lazy="item.avatar" alt="" class="avatar">
                             <span class="name">{{item.name}}</span>
                         </li>
@@ -54,6 +54,9 @@ export default {
         }
     },
     methods: {
+        selectItem(item) {
+            this.$emit('select', item)
+        },
         // 点击
         onShotcutTouchStart(e) {
             let anchorIndex = getData(e.target, 'index')
@@ -146,7 +149,6 @@ export default {
             }
             this.fixedTop = fixedTop
             this.$refs.listFixed.style.transform = `translate3d(0,${fixedTop}px,0)`
-
         }
     }
 }   

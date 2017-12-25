@@ -5,7 +5,7 @@ import fastclick from 'fastclick'
 import 'common/stylus/index.styl'
 import router from './router'
 import lazyload from 'vue-lazyload'
-
+import store from './store'
 Vue.use(lazyload, {
   loading: require('common/image/default.png')
 })
@@ -21,6 +21,6 @@ fastclick.attach(document.body)
 new Vue({
   el: '#app',
   router,
-  // store,
+  store,
   render: c => c(App)
 })

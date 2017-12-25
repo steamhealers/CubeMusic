@@ -1,14 +1,16 @@
 <template>
   <div class="singer">
-    <listview :data="singers"></listview>
+    <listview @select="selectSinger" :data="singers"></listview>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
 import listview from 'base/listview/listview'
-import { getSingerList } from 'api/singer'
 import { ERR_OK } from 'api/config'
 import Singer from 'common/js/singer'
+import { mapMutations } from 'vuex'
+import { getSingerList } from 'api/singer'
 const HOT_NAME = '热门歌手'
 const HOT_NAME_LENGTH = 10
 export default {
@@ -24,11 +26,19 @@ export default {
     this._getSingerList()
   },
   methods: {
+    ...mapMutations({
+      setSinger: 'SET_SINGER'
+    }),
+    selectSinger(singer) {
+      this.$router.push({
+        path: `/singer/${singer.id}`
+      })
+      this.setSinger(singer)
+    },
     _getSingerList() {
       getSingerList().then(res => {
         if (res.code === ERR_OK) {
           this.singers = this._normalizeSinger(res.data.list)
-          console.log(this.singers)
         }
       }).catch(e => {
         console.log(e)
@@ -45,7 +55,8 @@ export default {
       list.forEach((item, index) => {
         if (index < HOT_NAME_LENGTH) {
           map.hot.item.push(new Singer({
-            id: item.Fsinger_mid,
+            id: item.Fsinger_id,
+            mid: item.Fsinger_mid,
             name: item.Fsinger_name
           }))
         } else {
@@ -57,7 +68,8 @@ export default {
             }
           }
           map[key].item.push(new Singer({
-            id: item.Fsinger_mid,
+            id: item.Fsinger_id,
+            mid: item.Fsinger_mid,
             name: item.Fsinger_name
           }))
         }
