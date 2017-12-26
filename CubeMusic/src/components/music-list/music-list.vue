@@ -1,16 +1,22 @@
 <template>
   <div class="music-list">
-    <div class="back">
+    <div class="back" @click="back">
       <i class="icon-back"></i>
     </div>
-    <h1 class="title"></h1>
+    <h1 class="title">{{title}}</h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
+      <div class="play-wrapper" ref="playBtn">
+        <div class="play">
+          <i class="icon-play"></i>
+          <span class="text">随机播放歌曲</span>
+        </div>
+      </div>
       <div class="filter"></div>
     </div>
     <div class="bg-layer" ref="bgLayer"></div>
-    <scroll :data="songs" class="list" ref="list" @scroll="_onScroll" :probeType="probeType" :listenScroll="listenScroll">
+    <scroll :data="songs" class="list" ref="list" :probe-type="probeType" :listen-scroll="listenScroll" @scroll="_onScroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list :songs="songs" @select="selectItem"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -21,27 +27,24 @@
 
 <script>
 import scroll from 'base/scroll/scroll'
-import songList from 'base/song-list/song-list'
 import loading from 'base/loading/loading'
+import songList from 'base/song-list/song-list'
+import { prefixStyle } from 'common/js/dom'
+import { mapActions } from 'vuex'
+
+const transform = prefixStyle('transform')
+const backdrop = prefixStyle('backdrop-fliter')
+const RESERVE_HEIGHT = 40
 export default {
-  props: {
-    bgImage: {
-      type: String,
-      default: ''
-    },
-    songs: {
-      type: Array,
-      default: []
-    },
-    title: {
-      type: String,
-      default: ''
-    }
-  },
   components: {
     scroll,
     songList,
     loading
+  },
+  computed: {
+    bgStyle() {
+      return `background-image:url('${this.bgImage}')`
+    }
   },
   data() {
     return {
@@ -50,23 +53,76 @@ export default {
       scrollY: -1
     }
   },
-  computed: {
-    bgStyle() {
-      return `background-image:url("${this.bgImage}")`
+  props: {
+    songs: {
+      type: Array,
+      default: []
+    },
+    bgImage: {
+      type: String,
+      default: ''
+    },
+    title: {
+      type: String,
+      default: ''
     }
   },
+  created() {
+    console.log(this.songs)
+  },
   mounted() {
-    this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`
+    this.imageHeight = this.$refs.bgImage.clientHeight
+    this.minImageHeight = -this.imageHeight + RESERVE_HEIGHT
+    this.$refs.list.$el.style.top = `${this.imageHeight}px`
   },
   methods: {
+    ...mapActions([
+      'selectPlay'
+    ]),
+    back() {
+      this.$router.back()
+    },
     _onScroll(pos) {
       this.scrollY = pos.y
+      console.log(this.scrollY);
+    },
+    selectItem(item, index) {
+      this.selectPlay({
+        list: this.songs,
+        index
+      })
+
     }
   },
   watch: {
     scrollY(newY) {
-      this.$refs.bgLayer.style.transform = `translate3d(0,${newY}px,0)`
+      let zIndex = 0
+      let scale = 1
+      let blur = 0
+      let transformY = Math.max(this.minImageHeight, newY)
+      this.$refs.bgLayer.style[transform] = `translate3d(0,${transformY}px,0)`
 
+      if (newY < this.minImageHeight) {
+        zIndex = 10
+        this.$refs.bgImage.style.paddingTop = 0
+        this.$refs.bgImage.style.height = `${RESERVE_HEIGHT}px`
+        this.$refs.playBtn.style.display = 'none'
+      } else {
+        this.$refs.bgImage.style.paddingTop = '70%'
+        this.$refs.bgImage.style.height = 0
+        this.$refs.playBtn.style.display = ''
+      }
+      this.$refs.bgImage.style.zIndex = zIndex
+
+      let percent = Math.abs(newY / this.imageHeight)
+      if (newY > 0) {
+        scale = 1 + percent
+        this.$refs.bgImage.style[transform] = `scale(${scale})`
+        this.$refs.bgImage.style.zIndex = 10
+      } else {
+        blur = Math.min(20 * percent, 20)
+        this.$refs.bgImage.style[backdrop] = `blur(${blur})`
+      }
     }
   }
 }
