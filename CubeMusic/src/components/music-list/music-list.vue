@@ -5,7 +5,7 @@
     </div>
     <h1 class="title">{{title}}</h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
-      <div class="play-wrapper" ref="playBtn">
+      <div class="play-wrapper" ref="playBtn" @click="randomItem">
         <div class="play">
           <i class="icon-play"></i>
           <span class="text">随机播放歌曲</span>
@@ -16,7 +16,7 @@
     <div class="bg-layer" ref="bgLayer"></div>
     <scroll :data="songs" class="list" ref="list" :probe-type="probeType" :listen-scroll="listenScroll" @scroll="_onScroll">
       <div class="song-list-wrapper">
-        <song-list :songs="songs" @select="selectItem"></song-list>
+        <song-list :rank="rank" :songs="songs" @select="selectItem"></song-list>
       </div>
       <div class="loading-container" v-show="!songs.length">
         <loading></loading>
@@ -31,11 +31,13 @@ import loading from 'base/loading/loading'
 import songList from 'base/song-list/song-list'
 import { prefixStyle } from 'common/js/dom'
 import { mapActions } from 'vuex'
+import { playlistMixin } from 'common/js/mixin'
 
 const transform = prefixStyle('transform')
 const backdrop = prefixStyle('backdrop-fliter')
 const RESERVE_HEIGHT = 40
 export default {
+  mixins: [playlistMixin],
   components: {
     scroll,
     songList,
@@ -65,10 +67,13 @@ export default {
     title: {
       type: String,
       default: ''
+    },
+    rank: {
+      type: Boolean,
+      default: false
     }
   },
   created() {
-    console.log(this.songs)
   },
   mounted() {
     this.imageHeight = this.$refs.bgImage.clientHeight
@@ -77,7 +82,8 @@ export default {
   },
   methods: {
     ...mapActions([
-      'selectPlay'
+      'selectPlay',
+      'randomPlay'
     ]),
     back() {
       this.$router.back()
@@ -91,7 +97,16 @@ export default {
         list: this.songs,
         index
       })
-
+    },
+    randomItem() {
+      this.randomPlay({
+        list: this.songs
+      })
+    },
+    handlePlaylist(playlist) {
+      const bottom = playlist.length > 0 ? 60 : 0
+      this.$refs.list.$el.style.bottom = `${bottom}px`
+      this.$refs.list.refresh()
     }
   },
   watch: {

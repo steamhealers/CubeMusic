@@ -46,7 +46,7 @@ export default {
         this.scroll.on('scroll', (pos) => {
           vm.$emit('scroll', pos)
         })
-      }
+      }      
     },
     enable() {
       this.scroll && this.scroll.enable()

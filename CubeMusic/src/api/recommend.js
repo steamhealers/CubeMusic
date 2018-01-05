@@ -29,3 +29,27 @@ export function getDiscList() {
     return Promise.resolve(res.data)
   })
 }
+
+export function getSongList(disstid) {
+  const url = 'api/getSongs'
+  const data = Object.assign({}, commonParams, {
+    type: 1,
+    json: 1,
+    utf8: 1,
+    onlysong: 0,
+    disstid,
+    g_tk: 5381,
+    jsonpCallback: 'playlistinfoCallback',
+    loginUin: 0,
+    hostUin: 0,
+    notice: 0,
+    platform: 'yqq',
+    needNewCode: 0,
+    format: 'jsonp'
+  })
+  return axios.get(url, {
+    params: data
+  }).then(res => {
+    return Promise.resolve(res.data)
+  })
+}

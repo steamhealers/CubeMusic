@@ -31,9 +31,7 @@ export function getSingerDetail(singerId) {
     needNewCode: 1,
     order: 'listen',
     from: 'h5',
-    // num: 15,
-    begin: 0,
-    _: 1514186551364
+    begin: 0
   })
   return jsonp(url, data, options)
 }
