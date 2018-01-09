@@ -1,5 +1,5 @@
 <template>
-  <scroll class="suggest" :pullUp="pullUp" :data="result" @scrollToEnd="searchMore">
+  <scroll class="suggest" :pullUp="pullUp" :data="result" @scrollToEnd="searchMore" ref="suggest">
     <ul class="suggest-list">
       <li class="suggest-item" v-for="item in result">
         <div class="icon" >
@@ -47,7 +47,9 @@ export default {
   },
   methods: {
     search() {
+      this.page =1
       this.hasMore = true
+      this.$refs.suggest.scrollTo(0,0)
       search(this.query, this.page, this.showSinger, perpage).then(res => {
         if (res.code === ERR_OK) {
           this.result = this._genResult(res.data)
