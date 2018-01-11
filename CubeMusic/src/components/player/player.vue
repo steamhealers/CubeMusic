@@ -108,7 +108,8 @@ export default {
       currentLyric: '',
       currentLineNum: 0,
       currentShow: 'cd',
-      playingLyric: ''
+      playingLyric: '',
+      songErr:false
     }
   },
   created() {
@@ -215,10 +216,14 @@ export default {
     },
     ready() {
       this.songReady = true
+      this.songErr = false      
     },
     error() {
       this.songReady = true
-      this.nextSong()
+      this.songErr = true
+      setTimeout(() => {
+        this.nextSong()
+      },2000)
     },
     togglePlaying() {
       if (!this.songReady) {
@@ -320,6 +325,9 @@ export default {
       this.setCurrentIndex(index)
     },
     getLyric() {
+      if(this.songErr){
+        return
+      }
       this.currentSong.getLyric().then(lyric => {
         this.currentLyric = new Lyric(lyric, this.handleLyric)
         if (this.playing) {
