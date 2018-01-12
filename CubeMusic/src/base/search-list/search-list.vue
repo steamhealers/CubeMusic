@@ -21,9 +21,11 @@
     },
     methods: {
       selectItem(item) {
+        console.log(1);
         this.$emit('select', item)
       },
       deleteOne(item) {
+        console.log(2);
         this.$emit('delete', item)
       }
     }
