@@ -29,7 +29,7 @@
     <div class="search-result" v-show="query" ref="searchResult">
       <suggest :query="query" @listScroll="blurInput" @select="saveSearch" ref="suggest"></suggest>
     </div>
-    <confirm ref="confirm" text="确认清楚搜索历史?" confirmBtnText="清空" @confirm="clearSearchHistory"></confirm>
+    <confirm ref="confirm" text="确认清空搜索历史?" confirmBtnText="清空" @confirm="clearSearchHistory"></confirm>
     <router-view></router-view>
   </div>
 </template>
@@ -43,10 +43,10 @@ import { mapActions, mapGetters } from 'vuex'
 import searchList from 'base/search-list/search-list'
 import confirm from 'base/confirm/confirm'
 import scroll from 'base/scroll/scroll'
-import { playlistMixin } from "common/js/mixin";
+import { playlistMixin, searchMixin } from "common/js/mixin";
 
 export default {
-  mixins: [playlistMixin],
+  mixins: [playlistMixin, searchMixin],
   components: {
     searchBox,
     suggest,
@@ -59,22 +59,22 @@ export default {
   },
   data() {
     return {
-      hotKey: [],
-      query: ''
+      hotKey: []
+      // query: ''
     }
   },
   computed: {
-    ...mapGetters([
-      'searchHistory'
-    ]),
+    // ...mapGetters([
+    //   'searchHistory'
+    // ]),
     shortcut() {
       return this.hotKey.concat(this.searchHistory)
     }
   },
   methods: {
     ...mapActions([
-      'saveSearchHistory',
-      'deleteSearchHistory',
+      // 'saveSearchHistory',
+      // 'deleteSearchHistory',
       'clearSearchHistory'
     ]),
     _getHotKey() {
@@ -85,18 +85,18 @@ export default {
         }
       })
     },
-    addQuery(key) {
-      this.$refs.searchBox.setQuery(key)
-    },
-    onQueryChange(query) {
-      this.query = query
-    },
-    blurInput() {
-      this.$refs.searchBox.blur()
-    },
-    saveSearch() {
-      this.saveSearchHistory(this.query)
-    },
+    // addQuery(key) {
+    //   this.$refs.searchBox.setQuery(key)
+    // },
+    // onQueryChange(query) {
+    //   this.query = query
+    // },
+    // blurInput() {
+    //   this.$refs.searchBox.blur()
+    // },
+    // saveSearch() {
+    //   this.saveSearchHistory(this.query)
+    // },
     showConfirm() {
       this.$refs.confirm.show()
     },
@@ -115,7 +115,7 @@ export default {
       if (!newQuery) {
         setTimeout(() => {
           this.$refs.scroll.refresh()
-        }, 20)
+        }, this.refreshDelay)
       }
     }
   }

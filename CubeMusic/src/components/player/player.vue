@@ -1,5 +1,5 @@
 <template>
-  <div class="player">
+  <div class="player" v-show="playlist.length>0">
     <transition name="normal" @enter="enter" @after-enter="afterEnter" @leave="leave" @after-leave="afterLeave">
       <div class="normal-player" v-show="fullScreen">
         <div class="background">
@@ -77,11 +77,12 @@
             <i :class="miniPlayingIcon" class="icon-mini" @click.stop="togglePlaying"></i>
           </progress-circle>
         </div>
-        <div class="control">
+        <div class="control" @click.stop="showPlaylist">
           <i class="icon-playlist"></i>
         </div>
       </div>
     </transition>
+    <playlist ref="playlist"></playlist>
     <audio :src="currentSong.url" ref="audio" @canplay="ready" @error="error" @timeupdate="updateTime" @ended="ended"></audio>
   </div>
 </template>
@@ -91,15 +92,17 @@ import animations from 'create-keyframe-animation'
 import { prefixStyle } from 'common/js/dom'
 import progressBar from 'base/progress-bar/progress-bar'
 import progressCircle from 'base/progress-circle/progress-circle'
-import { playMode } from 'common/js/config'
-import { shuffle } from 'common/js/util'
+// import { playMode } from 'common/js/config'
 import Lyric from 'lyric-parser'
 import scroll from 'base/scroll/scroll'
+import Playlist from 'components/playlist/playlist'
+import { playerMixin } from "common/js/mixin";
 const transform = prefixStyle('transform')
 const transitionDuration = prefixStyle('transitionDuration')
 let timer = null
 
 export default {
+  mixins: [playerMixin],
   data() {
     return {
       songReady: false,
@@ -109,7 +112,7 @@ export default {
       currentLineNum: 0,
       currentShow: 'cd',
       playingLyric: '',
-      songErr:false
+      songErr: false
     }
   },
   created() {
@@ -118,12 +121,12 @@ export default {
   computed: {
     ...mapGetters([
       'fullScreen',
-      'playlist',
-      'currentSong',
+      // 'playlist',
+      // 'currentSong',
       'playing',
       'currentIndex',
-      'mode',
-      'sequencelist'
+      // 'mode',
+      // 'sequencelist'
     ]),
     mini() {
       return !this.fullScreen && this.playlist.length
@@ -142,23 +145,21 @@ export default {
     },
     percent() {
       return this.currentTime / this.currentSong.duration
-    },
-    iconMode() {
-      return this.mode === playMode.sequence ? 'icon-sequence' : (this.mode === playMode.loop ? 'icon-loop' : 'icon-random')
     }
   },
   components: {
     progressBar,
     progressCircle,
-    scroll
+    scroll,
+    Playlist
   },
   methods: {
     ...mapMutations({
       'setFullScreen': 'SET_FULL_SCREEN',
-      'setPlaying': 'SET_PLAYING',
-      'setCurrentIndex': 'SET_CURRENT_INDEX',
-      'setMode': 'SET_MODE',
-      'setPlayList': 'SET_PLAY_LIST'
+      // 'setPlaying': 'SET_PLAYING',
+      // 'setCurrentIndex': 'SET_CURRENT_INDEX',
+      // 'setMode': 'SET_MODE',
+      // 'setPlayList': 'SET_PLAY_LIST'
     }),
     back() {
       this.setFullScreen(false)
@@ -216,14 +217,14 @@ export default {
     },
     ready() {
       this.songReady = true
-      this.songErr = false      
+      this.songErr = false
     },
     error() {
       this.songReady = true
       this.songErr = true
-      setTimeout(() => {
-        this.nextSong()
-      },2000)
+      // setTimeout(() => {
+      //   this.nextSong()
+      // }, 2000)
     },
     togglePlaying() {
       if (!this.songReady) {
@@ -284,6 +285,9 @@ export default {
         this.currentLyric.seek(0)
       }
     },
+    showPlaylist() {
+      this.$refs.playlist.show()
+    },
     updateTime(e) {
       this.currentTime = e.target.currentTime
     },
@@ -306,26 +310,26 @@ export default {
         this.currentLyric.seek(currentTime * 1000)
       }
     },
-    changeMode() {
-      const mode = (this.mode + 1) % 3
-      this.setMode(mode)
-      let list = null
-      if (mode === playMode.random) {
-        list = shuffle(this.sequencelist)
-      } else {
-        list = this.sequencelist
-      }
-      this.resetCurrentIndex(list)
-      this.setPlayList(list)
-    },
-    resetCurrentIndex(list) {
-      let index = list.findIndex((item) => {
-        return item.id === this.currentSong.id
-      })
-      this.setCurrentIndex(index)
-    },
+    // changeMode() {
+    //   const mode = (this.mode + 1) % 3
+    //   this.setMode(mode)
+    //   let list = null
+    //   if (mode === playMode.random) {
+    //     list = shuffle(this.sequencelist)
+    //   } else {
+    //     list = this.sequencelist
+    //   }
+    //   this.resetCurrentIndex(list)
+    //   this.setPlayList(list)
+    // },
+    // resetCurrentIndex(list) {
+    //   let index = list.findIndex((item) => {
+    //     return item.id === this.currentSong.id
+    //   })
+    //   this.setCurrentIndex(index)
+    // },
     getLyric() {
-      if(this.songErr){
+      if (this.songErr) {
         return
       }
       this.currentSong.getLyric().then(lyric => {
@@ -412,6 +416,9 @@ export default {
   },
   watch: {
     currentSong(newSong, oldSong) {
+      if (!newSong.id) {
+        return
+      }
       if (newSong.id === oldSong.id) {
         return
       }
